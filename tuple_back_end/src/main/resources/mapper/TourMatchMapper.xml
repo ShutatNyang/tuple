@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.tourmatch.model.mapper.TourMatchMapper">
+
+    <resultMap id="TourMatchDto" type="com.ssafy.tourmatch.model.TourMatchDto">
+        <id property="id" column="id" />
+        <result property="memberId" column="member_id" />
+        <result property="tourPlanId" column="tour_plan_id" />
+        <result property="status" column="status" />
+        <result property="createdTime" column="created_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ssafy.tourmatch.model.TourMatchDto" >
+        insert
+        into tour_match (member_id, tour_plan_id)
+        value (#{memberId}, #{tourPlanId})
+    </insert>
+
+    <select id="getMyMatchList" resultMap="TourMatchDto">
+        select
+        tour_plan_id, status
+        from tour_match
+        where member_id = #{memberId}
+    </select>
+
+    <select id="getAllMatch" resultMap="TourMatchDto">
+        select
+        *
+        from tour_match
+        where member_id != #{memberId}
+    </select>
+
+    <update id="setMatched" parameterType="int">
+        update tour_match
+        set status = "matched"
+        where tour_plan_id = #{tourPlanId}
+    </update>
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.chat.model.mapper.ChatMapper">
+
+    <resultMap id="PreviousChatResponseDto" type="com.ssafy.chat.model.dto.response.PreviousChatResponseDto">
+        <id property="id" column="id" />
+        <result property="roomId" column="room_id" />
+        <result property="senderEmail" column="sender_email" />
+        <result property="message" column="message" />
+        <result property="sentTime" column="sent_time" />
+        <result property="myMessage" column="my_message" />
+        <result property="senderId" column="sender_id" />
+    </resultMap>
+
+    <!-- 특정 채팅방의 메시지 가져오기 -->
+    <select id="getRecentChats" resultMap="PreviousChatResponseDto">
+        SELECT
+        c.id,
+        c.room_id,
+        m.email AS sender_email,
+        c.message,
+        c.sent_time,
+        c.sender_id,
+        CASE
+        WHEN m.email = #{email} THEN true
+        ELSE false
+        END AS my_message
+        FROM
+        chat c
+        JOIN
+        member m ON c.sender_id = m.id
+        WHERE
+        c.room_id = #{roomId}
+        ORDER BY
+        c.sent_time DESC
+        LIMIT
+        #{limit} OFFSET #{offset};
+    </select>
+
+    <!-- 메시지 저장 -->
+    <insert id="saveChatMessage">
+        INSERT INTO chat (room_id, sender_id, message)
+        VALUES (#{roomId}, #{senderId}, #{message})
+    </insert>
+
+</mapper>

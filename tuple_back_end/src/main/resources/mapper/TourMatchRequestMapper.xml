@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.tourmatch.model.mapper.TourMatchRequestMapper">
+
+    <resultMap id="TourMatchRequestDto" type="com.ssafy.tourmatch.model.TourMatchRequestDto">
+        <id property="id" column="id" />
+        <result property="memberId" column="member_id" />
+        <result property="tourPlanId" column="tour_plan_id" />
+        <result property="partnerId" column="partner_id" />
+        <result property="status" column="status" />
+        <result property="createdTime" column="created_ime" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.ssafy.tourmatch.model.dto.request.RequestMatchDto">
+        insert
+        into tour_match_request (member_id, tour_plan_id, partner_id)
+        value (#{memberId}, #{tourPlanId}, #{partnerId})
+    </insert>
+
+    <update id="setStatus" parameterType="com.ssafy.tourmatch.model.dto.request.AcceptRejectMatchRequestDto">
+        update tour_match_request
+        set status = #{status}
+        where member_id = #{memberId} and partner_id = #{partnerId} and tour_plan_id = #{tourPlanId}
+    </update>
+
+    <update id="setRejectRestRequest" parameterType="com.ssafy.tourmatch.model.dto.request.AcceptRejectMatchRequestDto">
+        update tour_match_request
+        set status = "rejected"
+        where member_id = #{memberId} and partner_id != #{partnerId} and tour_plan_id = #{tourPlanId}
+    </update>
+
+    <select id="getMyMatchRequestPeople" resultMap="TourMatchRequestDto">
+        select partner_id
+        from tour_match_request
+        where member_id = #{memberId} and tour_plan_id = #{tourPlanId} and status = "pending"
+    </select>
+
+    <select id="getMyMatchRequestList" parameterType="int" resultMap="TourMatchRequestDto">
+        select *
+        from tour_match_request
+        where partner_id = #{partnerId}
+    </select>
+
+</mapper>

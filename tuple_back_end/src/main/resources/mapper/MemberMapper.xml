@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.member.model.mapper.MemberMapper">
+
+	<!-- 회원 정보 가져오기-->
+	<select id="getInfo" parameterType="String" resultType="com.ssafy.member.model.MemberDto">
+		SELECT *
+		FROM member
+		WHERE email = #{email}
+	</select>
+
+	<!-- 회원 가입 -->
+	<insert id="regist" parameterType="com.ssafy.member.model.MemberDto" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO member (email, password, phone, nickname, age, gender, profile_img, description, name)
+		VALUES (#{email}, #{password}, #{phone},  #{nickname}, #{age}, #{gender}, #{profile_img}, #{description}, #{name});
+	</insert>
+
+	<!-- 아이디 중복 체크 -->
+	<select id="idCheck" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM member
+		WHERE email = #{userId};
+	</select>
+
+	<!-- 로그인 -->
+	<select id="login" parameterType="map" resultType="com.ssafy.member.model.MemberDto">
+		SELECT email, password, phone, role, nickname, age, gender, profile_img, description, name, delete_time, created_time, updated_time, isAuthorized
+		FROM member
+		WHERE email = #{email}
+	</select>
+
+	<!-- 회원 정보 수정 -->
+	<update id="modify" parameterType="com.ssafy.member.model.MemberDto">
+		UPDATE member
+		SET phone = #{phone}, nickname = #{nickname}, age = #{age}, gender = #{gender}, description = #{description}, name = #{name}, updated_time = NOW()
+		WHERE email = #{email};
+	</update>
+
+	<!-- 비밀번호 변경 -->
+	<update id="modifyPassword" parameterType="com.ssafy.member.model.MemberDto">
+		UPDATE member
+		SET password = #{password}, updated_time = NOW()
+		WHERE email = #{email};
+	</update>
+
+	<!-- 회원 탈퇴 -->
+	<delete id="delete" parameterType="String">
+		DELETE FROM member
+		WHERE email = #{userId};
+	</delete>
+
+	<!-- 이메일로 사용자 조회 -->
+	<select id="findByEmail" parameterType="String" resultType="com.ssafy.member.model.MemberDto">
+		SELECT email, password, phone, role, nickname, age, gender, profile_img, description, name, delete_time, created_time, updated_time, access_token, refresh_token
+		FROM member
+		WHERE email = #{email};
+	</select>
+
+	<!-- Access Token 및 Refresh Token 업데이트 -->
+	<update id="updateTokens" parameterType="String">
+		UPDATE member
+		SET access_token = #{accessToken}, refresh_token = #{refreshToken}, updated_time = NOW()
+		WHERE email = #{email};
+	</update>
+
+	<!-- Access Token 업데이트 -->
+	<update id="updateAccessToken" parameterType="String">
+		UPDATE member
+		SET access_token = #{newAccessToken}, updated_time = NOW()
+		WHERE email = #{email};
+	</update>
+
+
+	<!-- OAuth 사용자 검색 -->
+	<select id="findOauthUser" resultType="com.ssafy.member.model.MemberDto">
+		SELECT m.*
+		FROM oauth o
+		JOIN member m ON o.member_id = m.id
+		WHERE o.provider = #{provider} AND o.provider_id = #{providerId}
+	</select>
+
+	<!-- OAuth 정보 저장 -->
+	<insert id="insertOauthInfo">
+		INSERT INTO oauth (member_id, provider, provider_id)
+		VALUES (#{memberId}, #{provider}, #{providerId})
+	</insert>
+
+
+	<select id="findEmail">
+		SELECT email
+		FROM member
+		WHERE name = #{name} and phone = #{phone}
+	</select>
+</mapper>

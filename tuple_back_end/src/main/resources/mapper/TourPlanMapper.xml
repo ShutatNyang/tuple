@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.tourplan.model.mapper.TourPlanMapper">
+
+    <!-- Result Map -->
+    <resultMap id="TourPlanResultMap" type="com.ssafy.tourplan.model.TourPlanDto">
+        <id property="id" column="id" />
+        <result property="ownerId" column="owner_id" />
+        <result property="planTitle" column="plan_title" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="startLocation" column="start_location" />
+        <result property="vehicle" column="vehicle" />
+        <result property="toTourVehicle" column="to_tour_vehicle" />
+        <result property="plan" column="plan" />
+        <result property="createDate" column="create_date" />
+        <result property="planDescription" column="plan_description" />
+    </resultMap>
+
+    <!-- Insert -->
+    <insert id="insert" parameterType="com.ssafy.tourplan.model.TourPlanDto">
+        INSERT INTO tour_plan (
+            owner_id, start_date, end_date, start_location,
+            vehicle, to_tour_vehicle, plan, plan_title, plan_description, create_date
+        ) VALUES (
+                     #{ownerId}, #{startDate}, #{endDate}, #{startLocation},
+                     #{vehicle}, #{toTourVehicle}, #{plan}, #{planTitle}, #{planDescription}, NOW()
+                 )
+    </insert>
+
+    <!-- Delete -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM tour_plan
+        WHERE id = #{id}
+    </delete>
+
+    <!-- Update -->
+    <update id="update" parameterType="com.ssafy.tourplan.model.TourPlanDto">
+        UPDATE tour_plan
+        SET
+            owner_id = #{ownerId},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            start_location = #{startLocation},
+            vehicle = #{vehicle},
+            to_tour_vehicle = #{toTourVehicle},
+            plan = #{plan},
+            plan_title = #{planTitle},
+            plan_description = #{planDescription},
+            create_date = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- Detail -->
+    <select id="detail" parameterType="int" resultMap="TourPlanResultMap">
+        SELECT *
+        FROM tour_plan
+        WHERE id = #{id}
+    </select>
+
+    <!-- List All -->
+    <select id="listAll" resultMap="TourPlanResultMap">
+        SELECT *
+        FROM tour_plan
+    </select>
+
+    <!-- List by Start Position -->
+    <select id="listByStartPosition" parameterType="string" resultMap="TourPlanResultMap">
+        SELECT *
+        FROM tour_plan
+        WHERE start_location = #{startPosition}
+        ORDER BY create_date DESC
+    </select>
+
+    <!-- Get Email by Board ID -->
+    <select id="getEmailByTourPlanId" parameterType="int" resultType="string">
+        SELECT m.email
+        FROM tour_plan t
+                 JOIN member m ON t.owner_id = m.id
+        WHERE t.id = #{id}
+    </select>
+
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.comment.model.mapper.CommentMapper">
+
+    <resultMap id="CommentListResponse" type="com.ssafy.comment.model.dto.response.CommentListResponseDto">
+        <!-- id 컬럼 -->
+        <id column="id" property="id" />
+        <!-- 일반 컬럼 매핑 -->
+        <result column="member_id" property="memberId" />
+        <result column="board_id" property="boardId" />
+        <result column="like_count" property="likeCount" />
+        <result column="dislike_count" property="dislikeCount" />
+        <result column="created_time" property="createdTime" />
+        <result column="content" property="content" />
+        <result column="delete_time" property="deleteTime" />
+        <result column="updated_time" property="updatedTime" />
+        <result column="email" property="email" />
+    </resultMap>
+
+    <!-- 댓글 등록 -->
+    <insert id="insert" parameterType="com.ssafy.comment.model.CommentDto">
+        INSERT
+        INTO comment (member_id, board_id, content)
+        VALUES (#{memberId}, #{boardId}, #{content})
+    </insert>
+
+    <!-- 댓글 삭제 -->
+    <delete id="delete" parameterType="com.ssafy.comment.model.dto.request.CommentDeleteRequestDto">
+        DELETE
+        FROM comment
+        WHERE id = #{id} AND board_id = #{boardId} AND member_id = #{memberId}
+    </delete>
+
+    <!-- 특정 글의 댓글 전체 조회 -->
+    <select id="listAll" parameterType="int" resultMap="CommentListResponse">
+        SELECT c.*, m.email
+        FROM comment c
+        JOIN member m
+        ON c.member_id = m.id
+        WHERE c.board_id = #{boardId}
+        ORDER BY c.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countAllCommentByBoardId">
+        SElECT COUNT(*)
+        FROM comment
+        WHERE board_id = #{boardId}
+    </select>
+
+    <!-- 좋아요 +1 -->
+    <update id="incrementRecommendCount" parameterType="int">
+        UPDATE comment
+        SET like_count = like_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 싫어요 +1 -->
+    <update id="incrementNotRecommendCount" parameterType="int">
+        UPDATE comment
+        SET dislike_count = dislike_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 중복 확인 테이블 추가 -->
+    <insert id="insertLikeDislike" parameterType="map">
+        INSERT IGNORE INTO comment_like_dislike (member_id, comment_id, is_like, created_time)
+        VALUES (#{memberId}, #{commentId}, #{isLike}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <!-- 중복 확인 테이블 삭제 -->
+    <delete id="cancelLikeDislike" parameterType="map">
+        DELETE from comment_like_dislike
+        where member_id = #{memberId} and comment_id = #{commentId}
+    </delete>
+
+    <!-- 좋아요 -1 -->
+    <update id="decrementRecommendCount" parameterType="map">
+        UPDATE comment
+        SET like_count = like_count - 1
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- 싫어요 -1 -->
+    <update id="decrementNotRecommendCount" parameterType="map">
+        UPDATE comment
+        SET dislike_count = dislike_count - 1
+        WHERE id = #{commentId}
+    </update>
+
+    <!-- memberId로 Email 가져오기 -->
+    <select id="getEmailByMemberId" parameterType="int" resultType="string">
+        SELECT email
+        FROM member
+        WHERE id = #{memberId}
+    </select>
+
+    <!-- boardId로 Email 가져오기 -->
+    <select id="getEmailByBoardId" parameterType="int" resultType="string">
+        SELECT m.email
+        FROM boards b
+        JOIN member m ON b.member_id = m.id
+        WHERE b.id = #{id}
+    </select>
+
+    <!-- Email로 memberId 가져오기 -->
+    <select id="getMemberIdByEmail" parameterType="string" resultType="int">
+        SELECT id
+        FROM member
+        WHERE email = #{email}
+    </select>
+
+    <select id="getIsLike" parameterType="com.ssafy.comment.model.dto.request.CommentRecommendStatusRequestDto" resultType="int">
+        SELECT
+        CASE
+        WHEN COUNT(*) = 0 THEN -1
+        ELSE MAX(is_like)
+        END AS is_like
+        FROM comment_like_dislike
+        WHERE member_id = #{memberId} AND comment_id = #{commentId};
+    </select>
+
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.email.model.mapper.EmailMapper">
+
+    <insert id="saveEmailToken">
+        INSERT INTO email_token (member_email, token, expired_time)
+        VALUES (#{email}, #{token}, NOW() + INTERVAL 1 HOUR)
+    </insert>
+
+    <select id="getEmailByToken" resultType="string">
+        SELECT member_email FROM email_token WHERE token = #{token}
+    </select>
+
+    <update id="authorizeMember" parameterType="String">
+        update member set isAuthorized = 1
+        where email = #{email};
+    </update>
+
+    <delete id="deleteEmailToken">
+        DELETE FROM email_token WHERE token = #{token}
+    </delete>
+
+    <insert id="savePasswordResetToken">
+        INSERT INTO password_reset_token (member_email, token, expired_time)
+        VALUES (#{email}, #{token}, NOW() + INTERVAL 1 HOUR)
+    </insert>
+
+
+    <select id="getEmailByPasswordResetToken" resultType="string">
+        SELECT member_email FROM password_reset_token WHERE token = #{token}
+    </select>
+
+    <delete id="deletePasswordResetToken">
+        DELETE FROM password_reset_token WHERE token = #{token}
+    </delete>
+
+    <update id="updatePassword">
+        UPDATE member SET password = #{hashedPassword} WHERE email = #{email}
+    </update>
+</mapper>

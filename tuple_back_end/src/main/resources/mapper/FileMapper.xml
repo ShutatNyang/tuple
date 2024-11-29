@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.file.model.mapper.FileMapper">
+
+    <resultMap id="FileDto" type="com.ssafy.file.model.FileDto">
+        <id property="id" column="id" />
+        <result property="memberId" column="member_id" />
+        <result property="saveFile" column="save_file" />
+        <result property="saveFolder" column="save_folder" />
+        <result property="originFile" column="origin_file" />
+        <result property="fileType" column="file_type" />
+        <result property="associatedTable" column="associated_table" />
+        <result property="associatedId" column="associated_id" />
+        <result property="uploadedTime" column="uploaded_time" />
+    </resultMap>
+
+    <!-- 파일 삽입 -->
+    <insert id="insertFile" parameterType="com.ssafy.file.model.FileDto">
+        INSERT INTO file (member_id, save_file, save_folder, origin_file, file_type, associated_table, associated_id)
+        VALUES (#{memberId}, #{saveFile}, #{saveFolder}, #{originFile}, #{fileType}, #{associatedTable}, #{associatedId})
+    </insert>
+
+    <!-- 특정 연관 ID에 속한 파일 조회 -->
+    <select id="getFilesByAssociation" parameterType="map" resultMap="FileDto">
+        SELECT * FROM file
+        WHERE associated_table = #{associatedTable}
+        AND associated_id = #{associatedId}
+    </select>
+
+    <!-- 파일 삭제 -->
+    <delete id="deleteByFileUrlAndAssociatedTable" parameterType="map">
+        DELETE FROM file WHERE save_file = #{fileUrl} AND associated_table = #{associatedTable}
+    </delete>
+
+    <update id="updateAssociatedId">
+        UPDATE file
+        SET associated_id = #{associatedId}
+        WHERE associated_table = #{associatedTable}
+        AND associated_id = 0; <!-- 임시 ID로 업로드된 항목만 수정 -->
+    </update>
+
+</mapper>

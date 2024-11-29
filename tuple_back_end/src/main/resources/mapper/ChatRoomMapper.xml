@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.chat.model.mapper.ChatRoomMapper">
+
+    <resultMap id="ChatRoomtDto" type="com.ssafy.chat.model.ChatRoomDto">
+        <id property="id" column="id" />
+        <result property="participant1Id" column="participant1_id" />
+        <result property="participant2Id" column="participant2_id" />
+        <result property="createdTime" column="created_time" />
+    </resultMap>
+
+    <!-- 1:1 채팅방 존재 여부 확인 -->
+    <select id="findChatRoomByMemberId" resultMap="ChatRoomtDto">
+        SELECT id, participant1_id, participant2_id, created_time
+        FROM chat_room
+        WHERE (participant1_id = #{participant1Id} AND participant2_id = #{participant2Id})
+        OR (participant1_id = #{participant2Id} AND participant2_id = #{participant1Id})
+    </select>
+
+    <!-- 1:1 채팅방 생성 -->
+    <insert id="createChatRoom" parameterType="com.ssafy.chat.model.ChatRoomDto">
+        INSERT INTO chat_room (participant1_id, participant2_id)
+        VALUES (#{participant1Id}, #{participant2Id})
+    </insert>
+
+    <select id="exists" resultType="int">
+        SELECT COUNT(*) FROM chat_room WHERE id = #{roomId}
+    </select>
+
+    <select id="getMemberIdByEmail" parameterType="String">
+        SELECT id
+        FROM member
+        WHERE email = #{email}
+    </select>
+
+    <select id="getMyChatRoom" parameterType="int" resultType="com.ssafy.chat.model.dto.response.MyChatRoomDto">
+        SELECT
+        cr.id,
+        CASE
+        WHEN cr.participant1_id = #{memberId} THEN m1.email
+        ELSE m2.email
+        END AS myEmail,
+        CASE
+        WHEN cr.participant2_id = #{memberId} THEN m1.email
+        ELSE m2.email
+        END AS partnerEmail,
+        CASE
+        WHEN cr.participant2_id = #{memberId} THEN m1.id
+        ELSE m2.id
+        END AS partnerId
+        FROM
+        chat_room cr
+        JOIN
+        member m1 ON cr.participant1_id = m1.id
+        JOIN
+        member m2 ON cr.participant2_id = m2.id
+        WHERE
+        cr.participant1_id = #{memberId}
+        OR cr.participant2_id = #{memberId};
+    </select>
+</mapper>
